@@ -5,7 +5,7 @@
 %define keepstatic 1
 Name     : directx-headers
 Version  : 1.602.0
-Release  : 2
+Release  : 3
 URL      : https://github.com/microsoft/DirectX-Headers/archive/refs/tags/v1.602.0.tar.gz
 Source0  : https://github.com/microsoft/DirectX-Headers/archive/refs/tags/v1.602.0.tar.gz
 Summary  : No detailed summary available
@@ -14,6 +14,11 @@ License  : MIT
 Requires: directx-headers-license = %{version}-%{release}
 BuildRequires : buildreq-cmake
 BuildRequires : buildreq-meson
+BuildRequires : gcc-dev32
+BuildRequires : gcc-libgcc32
+BuildRequires : gcc-libstdc++32
+BuildRequires : glibc-dev32
+BuildRequires : glibc-libc32
 BuildRequires : googletest-dev
 Patch1: notest.patch
 
@@ -29,6 +34,15 @@ Requires: directx-headers = %{version}-%{release}
 
 %description dev
 dev components for the directx-headers package.
+
+
+%package dev32
+Summary: dev32 components for the directx-headers package.
+Group: Default
+Requires: directx-headers-dev = %{version}-%{release}
+
+%description dev32
+dev32 components for the directx-headers package.
 
 
 %package license
@@ -48,17 +62,29 @@ Requires: directx-headers-dev = %{version}-%{release}
 staticdev components for the directx-headers package.
 
 
+%package staticdev32
+Summary: staticdev32 components for the directx-headers package.
+Group: Default
+Requires: directx-headers-dev = %{version}-%{release}
+
+%description staticdev32
+staticdev32 components for the directx-headers package.
+
+
 %prep
 %setup -q -n DirectX-Headers-1.602.0
 cd %{_builddir}/DirectX-Headers-1.602.0
 %patch1 -p1
+pushd ..
+cp -a DirectX-Headers-1.602.0 build32
+popd
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1657139007
+export SOURCE_DATE_EPOCH=1657139625
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -69,10 +95,34 @@ export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
 export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=auto "
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain -Dbuild-test=false  builddir
 ninja -v -C builddir
+pushd ../build32/
+export PKG_CONFIG_PATH="/usr/lib32/pkgconfig:/usr/share/pkgconfig"
+export ASFLAGS="${ASFLAGS}${ASFLAGS:+ }--32"
+export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32 -mstackrealign"
+export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32 -mstackrealign"
+export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32 -mstackrealign"
+meson --libdir=lib32 --prefix=/usr --buildtype=plain -Dbuild-test=false  builddir
+ninja -v -C builddir
+popd
 
 %install
 mkdir -p %{buildroot}/usr/share/package-licenses/directx-headers
 cp %{_builddir}/DirectX-Headers-1.602.0/LICENSE %{buildroot}/usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d
+pushd ../build32/
+DESTDIR=%{buildroot} ninja -C builddir install
+if [ -d  %{buildroot}/usr/lib32/pkgconfig ]
+then
+pushd %{buildroot}/usr/lib32/pkgconfig
+for i in *.pc ; do ln -s $i 32$i ; done
+popd
+fi
+if [ -d %{buildroot}/usr/share/pkgconfig ]
+then
+pushd %{buildroot}/usr/share/pkgconfig
+for i in *.pc ; do ln -s $i 32$i ; done
+popd
+fi
+popd
 DESTDIR=%{buildroot} ninja -C builddir install
 
 %files
@@ -110,6 +160,11 @@ DESTDIR=%{buildroot} ninja -C builddir install
 /usr/include/wsl/wrladapter.h
 /usr/lib64/pkgconfig/DirectX-Headers.pc
 
+%files dev32
+%defattr(-,root,root,-)
+/usr/lib32/pkgconfig/32DirectX-Headers.pc
+/usr/lib32/pkgconfig/DirectX-Headers.pc
+
 %files license
 %defattr(0644,root,root,0755)
 /usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d
@@ -117,3 +172,7 @@ DESTDIR=%{buildroot} ninja -C builddir install
 %files staticdev
 %defattr(-,root,root,-)
 /usr/lib64/libDirectX-Guids.a
+
+%files staticdev32
+%defattr(-,root,root,-)
+/usr/lib32/libDirectX-Guids.a
