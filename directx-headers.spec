@@ -4,10 +4,10 @@
 #
 %define keepstatic 1
 Name     : directx-headers
-Version  : 1.602.0
-Release  : 3
-URL      : https://github.com/microsoft/DirectX-Headers/archive/refs/tags/v1.602.0.tar.gz
-Source0  : https://github.com/microsoft/DirectX-Headers/archive/refs/tags/v1.602.0.tar.gz
+Version  : 1.608.0
+Release  : 4
+URL      : https://github.com/microsoft/DirectX-Headers/archive/v1.608.0/DirectX-Headers-1.608.0.tar.gz
+Source0  : https://github.com/microsoft/DirectX-Headers/archive/v1.608.0/DirectX-Headers-1.608.0.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : MIT
@@ -72,11 +72,11 @@ staticdev32 components for the directx-headers package.
 
 
 %prep
-%setup -q -n DirectX-Headers-1.602.0
-cd %{_builddir}/DirectX-Headers-1.602.0
+%setup -q -n DirectX-Headers-1.608.0
+cd %{_builddir}/DirectX-Headers-1.608.0
 %patch1 -p1
 pushd ..
-cp -a DirectX-Headers-1.602.0 build32
+cp -a DirectX-Headers-1.608.0 build32
 popd
 
 %build
@@ -84,7 +84,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1657139625
+export SOURCE_DATE_EPOCH=1672168951
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -107,7 +107,7 @@ popd
 
 %install
 mkdir -p %{buildroot}/usr/share/package-licenses/directx-headers
-cp %{_builddir}/DirectX-Headers-1.602.0/LICENSE %{buildroot}/usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d
+cp %{_builddir}/DirectX-Headers-%{version}/LICENSE %{buildroot}/usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d
 pushd ../build32/
 DESTDIR=%{buildroot} ninja -C builddir install
 if [ -d  %{buildroot}/usr/lib32/pkgconfig ]
@@ -142,6 +142,15 @@ DESTDIR=%{buildroot} ninja -C builddir install
 /usr/include/directx/d3dcommon.h
 /usr/include/directx/d3dcommon.idl
 /usr/include/directx/d3dx12.h
+/usr/include/directx/d3dx12_barriers.h
+/usr/include/directx/d3dx12_check_feature_support.h
+/usr/include/directx/d3dx12_core.h
+/usr/include/directx/d3dx12_default.h
+/usr/include/directx/d3dx12_pipeline_state_stream.h
+/usr/include/directx/d3dx12_render_pass.h
+/usr/include/directx/d3dx12_resource_helpers.h
+/usr/include/directx/d3dx12_root_signature.h
+/usr/include/directx/d3dx12_state_object.h
 /usr/include/directx/dxcore.h
 /usr/include/directx/dxcore_interface.h
 /usr/include/directx/dxgicommon.h
@@ -149,10 +158,13 @@ DESTDIR=%{buildroot} ninja -C builddir install
 /usr/include/directx/dxgiformat.h
 /usr/include/directx/dxgiformat.idl
 /usr/include/dxguids/dxguids.h
-/usr/include/wsl/stubs/OAIdl.h
-/usr/include/wsl/stubs/OCIdl.h
+/usr/include/wsl/stubs/basetsd.h
+/usr/include/wsl/stubs/oaidl.h
+/usr/include/wsl/stubs/ocidl.h
 /usr/include/wsl/stubs/rpc.h
 /usr/include/wsl/stubs/rpcndr.h
+/usr/include/wsl/stubs/unknwn.h
+/usr/include/wsl/stubs/unknwnbase.h
 /usr/include/wsl/stubs/winapifamily.h
 /usr/include/wsl/stubs/wrl/client.h
 /usr/include/wsl/stubs/wrl/implements.h
