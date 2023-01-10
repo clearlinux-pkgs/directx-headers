@@ -4,10 +4,10 @@
 #
 %define keepstatic 1
 Name     : directx-headers
-Version  : 1.608.0
-Release  : 4
-URL      : https://github.com/microsoft/DirectX-Headers/archive/v1.608.0/DirectX-Headers-1.608.0.tar.gz
-Source0  : https://github.com/microsoft/DirectX-Headers/archive/v1.608.0/DirectX-Headers-1.608.0.tar.gz
+Version  : 1.608.2
+Release  : 5
+URL      : https://github.com/microsoft/DirectX-Headers/archive/v1.608.2/DirectX-Headers-1.608.2.tar.gz
+Source0  : https://github.com/microsoft/DirectX-Headers/archive/v1.608.2/DirectX-Headers-1.608.2.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : MIT
@@ -20,6 +20,9 @@ BuildRequires : gcc-libstdc++32
 BuildRequires : glibc-dev32
 BuildRequires : glibc-libc32
 BuildRequires : googletest-dev
+# Suppress stripping binaries
+%define __strip /bin/true
+%define debug_package %{nil}
 Patch1: notest.patch
 
 %description
@@ -72,11 +75,11 @@ staticdev32 components for the directx-headers package.
 
 
 %prep
-%setup -q -n DirectX-Headers-1.608.0
-cd %{_builddir}/DirectX-Headers-1.608.0
+%setup -q -n DirectX-Headers-1.608.2
+cd %{_builddir}/DirectX-Headers-1.608.2
 %patch1 -p1
 pushd ..
-cp -a DirectX-Headers-1.608.0 build32
+cp -a DirectX-Headers-1.608.2 build32
 popd
 
 %build
@@ -84,15 +87,15 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1672168951
+export SOURCE_DATE_EPOCH=1673366617
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
 export NM=gcc-nm
-export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=auto "
-export FCFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
-export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=auto "
-export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=auto "
+export CFLAGS="$CFLAGS -O3 -fdebug-types-section -femit-struct-debug-baseonly -ffat-lto-objects -flto=auto -g1 -gno-column-info -gno-variable-location-views -gz "
+export FCFLAGS="$FFLAGS -O3 -fdebug-types-section -femit-struct-debug-baseonly -ffat-lto-objects -flto=auto -g1 -gno-column-info -gno-variable-location-views -gz "
+export FFLAGS="$FFLAGS -O3 -fdebug-types-section -femit-struct-debug-baseonly -ffat-lto-objects -flto=auto -g1 -gno-column-info -gno-variable-location-views -gz "
+export CXXFLAGS="$CXXFLAGS -O3 -fdebug-types-section -femit-struct-debug-baseonly -ffat-lto-objects -flto=auto -g1 -gno-column-info -gno-variable-location-views -gz "
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain -Dbuild-test=false  builddir
 ninja -v -C builddir
 pushd ../build32/
@@ -107,7 +110,7 @@ popd
 
 %install
 mkdir -p %{buildroot}/usr/share/package-licenses/directx-headers
-cp %{_builddir}/DirectX-Headers-%{version}/LICENSE %{buildroot}/usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d
+cp %{_builddir}/DirectX-Headers-%{version}/LICENSE %{buildroot}/usr/share/package-licenses/directx-headers/18b993cdf002a15456fbd9aa0d42c3576a5c8d2d || :
 pushd ../build32/
 DESTDIR=%{buildroot} ninja -C builddir install
 if [ -d  %{buildroot}/usr/lib32/pkgconfig ]
@@ -130,6 +133,7 @@ DESTDIR=%{buildroot} ninja -C builddir install
 
 %files dev
 %defattr(-,root,root,-)
+/usr/include/directx/D3D12TokenizedProgramFormat.hpp
 /usr/include/directx/d3d12.h
 /usr/include/directx/d3d12.idl
 /usr/include/directx/d3d12compatibility.h
@@ -147,6 +151,7 @@ DESTDIR=%{buildroot} ninja -C builddir install
 /usr/include/directx/d3dx12_core.h
 /usr/include/directx/d3dx12_default.h
 /usr/include/directx/d3dx12_pipeline_state_stream.h
+/usr/include/directx/d3dx12_property_format_table.h
 /usr/include/directx/d3dx12_render_pass.h
 /usr/include/directx/d3dx12_resource_helpers.h
 /usr/include/directx/d3dx12_root_signature.h
@@ -184,7 +189,9 @@ DESTDIR=%{buildroot} ninja -C builddir install
 %files staticdev
 %defattr(-,root,root,-)
 /usr/lib64/libDirectX-Guids.a
+/usr/lib64/libd3dx12-format-properties.a
 
 %files staticdev32
 %defattr(-,root,root,-)
 /usr/lib32/libDirectX-Guids.a
+/usr/lib32/libd3dx12-format-properties.a
